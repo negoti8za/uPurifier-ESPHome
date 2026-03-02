@@ -1,0 +1,12 @@
+# ESPHome build artifacts
+.esphome/
+
+# Secrets — never commit real credentials
+esphome/secrets.yaml
+
+# VS Code
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
