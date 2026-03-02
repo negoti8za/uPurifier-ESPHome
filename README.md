@@ -73,24 +73,24 @@ ESPHome runs on the ESP8266, connects to your WiFi and MQTT broker, and publishe
 
 ### First-Time Flash Hardware
 
-The ESP-12F on the PCB has no USB port, so the very first firmware upload requires a **USB-to-TTL serial adapter**.  
+The board supports **UART programming only** via the TX and RX pin headers — there is no USB interface on the PCB. A **USB-to-TTL serial adapter** is required for the first firmware upload.  
 Common adapters: CP2102 · CH340G · FT232RL
 
-> ⚠️ **Use the 5 V output from the adapter to power the PCB.**  
-> The PCB has an onboard 3.3 V voltage regulator — it accepts 5 V on its VCC pin and  
-> steps it down internally for the ESP8266.  
-> The TX / RX signal lines operate at 3.3 V logic, which all standard adapters support.
+> **Power supply during programming:**  
+> Connect the adapter's power output to the **VIN** and **GND** pins on the PCB.  
+> The board accepts **+5 V to +24 V** on VIN and has an onboard buck converter that regulates it down for the ESP8266.  
+> A direct **3.3 V** supply is **not guaranteed to work** — there may be enough voltage drop across the onboard buck converter to cause instability or failed flashing. Always supply via VIN with at least 5 V.
 
 **Wiring:**
 
 | USB-TTL adapter pin | PCB header pin |
-|---------------------|---------------|
-| **5V** | VCC |
+|---------------------|----------------|
+| 5 V (or 5–24 V) | **VIN** |
 | GND | GND |
 | TX | RX |
 | RX | TX |
 
-Do **not** connect anything else during flashing. Disconnect the 24 V fan supply before wiring the TTL adapter.
+Disconnect the 24 V fan supply before connecting the TTL adapter. Do not connect both power sources at the same time.
 
 ---
 
@@ -140,7 +140,8 @@ To create an MQTT user: **Settings → Add-ons → Mosquitto broker → Configur
 The ESP8266 has two modes: **normal boot** and **flash mode**.  
 You must force it into flash mode before uploading firmware for the first time.
 
-The PCB has two buttons: **BOOT** (GPIO0) and **RESET**.
+The PCB has two buttons: **BOOT** (GPIO0) and **RESET**.  
+> **BOOT button location:** The BOOT button is located on the **right side of the WiFi module** on the PCB.
 
 **Procedure — follow this exact order:**
 
@@ -281,7 +282,7 @@ ESPHome detects the device on the network by hostname and uploads over WiFi. You
 | Device not in HA | MQTT discovery not firing | Confirm `discovery: true` in YAML; check Mosquitto is running |
 | Serial upload fails — port not found | Wrong COM port | Specify port manually with `--device COMx` |
 | Serial upload — timeout / no response | Not in flash mode | Redo the BOOT+RESET procedure exactly as described |
-| Serial upload — boot loop / crash | 5 V not on VCC | Check wiring; use the **5V** pin on the adapter, not 3V3 |
+| Serial upload — instability / crash | Insufficient voltage on VIN | Use at least 5 V on the **VIN** pin; 3.3 V is not guaranteed to work |
 | OTA upload fails | Wrong OTA password | Re-flash via serial with corrected `secrets.yaml` |
 
 ---
